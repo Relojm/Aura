@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURA</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; font-family:'Inter', sans-serif; color:white; height:100vh; display:flex; align-items:center; justify-content:center; }
+.phone { width:380px; height:760px; background:#0b0d11; border-radius:50px; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.8); }
+.header { padding:40px 20px 20px; text-align:center; }
+.time { font-family:'Space Grotesk', sans-serif; font-size:68px; font-weight:700; }
+.date { font-size:15px; color:#aaa; margin-top:5px; }
+.weather { padding:20px; margin:0 20px; background:#111319; border-radius:24px; display:flex; justify-content:space-between; align-items:center; }
+.temp { font-size:52px; font-weight:700; }
+.condition { font-size:18px; }
+.bottom { padding:20px; display:flex; justify-content:space-around; font-size:13px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+    <div class="header">
+        <div class="time" id="hora">00:00</div>
+        <div class="date" id="fecha">Cargando fecha...</div>
+    </div>
+    <div class="weather">
+        <div>
+            <div style="font-size:60px;margin-bottom:8px;" id="icono">☀️</div>
+            <div class="condition" id="estado">Cargando clima...</div>
+        </div>
+        <div style="text-align:right;">
+            <div class="temp" id="temperatura">--°</div>
+            <div style="color:#aaa;" id="ubicacion">Detectando...</div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div>💧 <span id="humedad">--%</span></div>
+        <div>🌬️ <span id="viento">-- km/h</span></div>
+        <div>☀️ <span id="sensacion">--°</span></div>
+    </div>
+</div>
+
+<script>
+function actualizarHoraYFecha() {
+    const ahora = new Date();
+    document.getElementById("hora").textContent = ahora.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById("fecha").textContent = ahora.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+
+function obtenerUbicacionYClima() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            // Usamos una API gratuita para obtener el clima basado en la ubicación
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weathercode,wind_speed_10m&timezone=auto`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("temperatura").textContent = Math.round(data.current.temperature_2m) + '°';
+                    document.getElementById("humedad").textContent = data.current.relative_humidity_2m + '%';
+                    document.getElementById("viento").textContent = Math.round(data.current.wind_speed_10m) + ' km/h';
+                    document.getElementById("sensacion").textContent = Math.round(data.current.apparent_temperature) + '°';
+                    
+                    // Mostramos un estado básico basado en el código del clima
+                    const code = data.current.weathercode;
+                    let estado = "Despejado";
+                    let icono = "☀️";
+                    
+                    if (code > 0 && code <= 3) {
+                        estado = "Parcialmente nublado";
+                        icono = "⛅";
+                    } else if (code > 3) {
+                        estado = "Nublado o Lluvioso";
+                        icono = "🌧️";
+                    }
+                    
+                    document.getElementById("estado").textContent = estado;
+                    document.getElementById("icono").textContent = icono;
+                    
+                    // Obtenemos el nombre de la ciudad usando latitud y longitud
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                        .then(response => response.json())
+                        .then(cityData => {
+                            const city = cityData.address.city || cityData.address.town || cityData.address.village || "Tu ubicación";
+                            document.getElementById("ubicacion").textContent = city;
+                        });
+                });
+        });
+    }
+}
+
+setInterval(actualizarHoraYFecha, 1000);
+actualizarHoraYFecha();
+obtenerUbicacionYClima();
+</script>
+
+</body>
+</html>
