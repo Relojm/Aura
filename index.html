@@ -1,101 +1,561 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURA</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; font-family:'Inter', sans-serif; color:white; height:100vh; display:flex; align-items:center; justify-content:center; }
-.phone { width:380px; height:760px; background:#0b0d11; border-radius:50px; overflow:hidden; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.8); }
-.header { padding:40px 20px 20px; text-align:center; }
-.time { font-family:'Space Grotesk', sans-serif; font-size:68px; font-weight:700; }
-.date { font-size:15px; color:#aaa; margin-top:5px; }
-.weather { padding:20px; margin:0 20px; background:#111319; border-radius:24px; display:flex; justify-content:space-between; align-items:center; }
-.temp { font-size:52px; font-weight:700; }
-.condition { font-size:18px; }
-.bottom { padding:20px; display:flex; justify-content:space-around; font-size:13px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smartwatch Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --panel-bg: #0c141f;
+            --card-bg: #060b11;
+            --text-main: #ffffff;
+            --text-sub: #7f8c9d;
+            --accent-green: #2ecc71;
+            --accent-blue: #3498db;
+            --accent-yellow: #f1c40f;
+            --border-color: #1a2a3a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 450px;
+            background-color: var(--panel-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding-bottom: 75px;
+            position: relative;
+        }
+
+        /* Barra superior */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nfc-tag {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .status-center {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 1px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+        }
+
+        /* Módulo de hora principal */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--card-bg);
+            margin: 15px 15px 10px 15px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .time-block .time {
+            font-size: 52px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .time-block .date {
+            color: var(--accent-blue);
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-top: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .time-block .location {
+            font-size: 13px;
+            color: var(--text-main);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .weather-block {
+            text-align: center;
+        }
+
+        .weather-icon-big {
+            font-size: 42px;
+            color: var(--accent-yellow);
+        }
+
+        .weather-status {
+            font-size: 11px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        .weather-temp {
+            font-size: 34px;
+            font-weight: bold;
+        }
+
+        /* Grid de Contenido */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 0 15px 15px 15px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 11px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        /* Tarjeta: Clima Detallado */
+        .clima-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .clima-row .temp {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .clima-desc {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+
+        .min-max-box {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 11px;
+        }
+
+        .air-quality {
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        /* Tarjeta: Condiciones */
+        .cond-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .cond-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .cond-item span {
+            color: var(--text-sub);
+            font-size: 10px;
+            display: block;
+        }
+
+        /* Tarjeta: Astronomía */
+        .astro-chart {
+            height: 35px;
+            border-bottom: 1px dashed var(--text-sub);
+            border-radius: 50% / 100% 100% 0 0;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .astro-sun {
+            position: absolute;
+            top: 8px;
+            left: 45%;
+            font-size: 14px;
+        }
+
+        .astro-times {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+        }
+
+        .astro-times b {
+            color: var(--text-main);
+        }
+
+        .moon-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 8px;
+        }
+
+        /* Tarjeta: Geospatial */
+        .geo-item {
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .geo-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .geo-item span {
+            color: var(--text-sub);
+            font-size: 10px;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        /* Reloj Mundial */
+        .world-card {
+            margin: 0 15px 15px 15px;
+        }
+
+        .world-layout {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .world-icon {
+            font-size: 44px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .world-list {
+            flex-grow: 1;
+            font-size: 12px;
+        }
+
+        .world-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .world-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .world-line span {
+            color: var(--text-sub);
+        }
+
+        /* Menú Inferior Fijo */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 450px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .nav-link {
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .nav-link.active {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .nav-icon-label {
+            font-size: 18px;
+            margin-bottom: 3px;
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
-<div class="phone">
-    <div class="header">
-        <div class="time" id="hora">00:00</div>
-        <div class="date" id="fecha">Cargando fecha...</div>
-    </div>
-    <div class="weather">
-        <div>
-            <div style="font-size:60px;margin-bottom:8px;" id="icono">☀️</div>
-            <div class="condition" id="estado">Cargando clima...</div>
+    <div class="dashboard-container">
+        
+        <!-- Barra de Estado -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span>⚡</span>
+                <div class="nfc-tag">LINK NFC</div>
+            </div>
+            <div class="status-center">
+                <div class="live-dot"></div> PANEL METEOROLÓGICO
+            </div>
+            <div class="status-right">
+                <span>🔋 100%</span>
+            </div>
         </div>
-        <div style="text-align:right;">
-            <div class="temp" id="temperatura">--°</div>
-            <div style="color:#aaa;" id="ubicacion">Detectando...</div>
+
+        <!-- Bloque Principal Superior -->
+        <div class="main-header">
+            <div class="time-block">
+                <div class="time" id="txt-time">00:00</div>
+                <div class="date" id="txt-date">Cargando datos...</div>
+                <div class="location">📍 <span id="val-city">Detectando...</span></div>
+            </div>
+            <div class="weather-block">
+                <div class="weather-icon-big">☀️</div>
+                <div class="weather-status">Despejado</div>
+                <div class="weather-temp"><span id="val-temp-header">--</span>°C</div>
+            </div>
         </div>
-    </div>
-    <div class="bottom">
-        <div>💧 <span id="humedad">--%</span></div>
-        <div>🌬️ <span id="viento">-- km/h</span></div>
-        <div>☀️ <span id="sensacion">--°</span></div>
-    </div>
-</div>
 
-<script>
-function actualizarHoraYFecha() {
-    const ahora = new Date();
-    document.getElementById("hora").textContent = ahora.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
-    document.getElementById("fecha").textContent = ahora.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-}
-
-function obtenerUbicacionYClima() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
+        <!-- Secciones en Grid -->
+        <div class="grid-container">
             
-            // Usamos una API gratuita para obtener el clima basado en la ubicación
-            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weathercode,wind_speed_10m&timezone=auto`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("temperatura").textContent = Math.round(data.current.temperature_2m) + '°';
-                    document.getElementById("humedad").textContent = data.current.relative_humidity_2m + '%';
-                    document.getElementById("viento").textContent = Math.round(data.current.wind_speed_10m) + ' km/h';
-                    document.getElementById("sensacion").textContent = Math.round(data.current.apparent_temperature) + '°';
+            <!-- 1. Clima -->
+            <div class="card">
+                <div>
+                    <div class="card-title">Clima</div>
+                    <div class="clima-row">
+                        <div style="font-size: 24px; color: var(--accent-yellow);">☀️</div>
+                        <div>
+                            <div class="temp"><span id="val-temp-card">--</span>°C</div>
+                            <div class="clima-desc">Tiempo Real</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="min-max-box">
+                        <div style="color: #e74c3c;">🔺 MÁX: 32°C</div>
+                        <div style="color: #3498db;">🔻 MÍN: 19°C</div>
+                    </div>
+                    <div class="air-quality">
+                        🍃 AIRE: <b style="color: var(--accent-green);">EXCELENTE</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Condiciones -->
+            <div class="card">
+                <div class="card-title">Condiciones</div>
+                <div class="cond-box">
+                    <div class="cond-item">
+                        <div>⏲️</div>
+                        <div><span>PRESIÓN ATMOSFÉRICA</span><b>1016 hPa</b></div>
+                    </div>
+                    <div class="cond-item">
+                        <div>💧</div>
+                        <div><span>HUMEDAD</span><b>42%</b></div>
+                    </div>
+                    <div class="cond-item">
+                        <div>💨</div>
+                        <div><span>VIENTO</span><b>12 km/h NNE</b></div>
+                    </div>
+                    <div class="cond-item">
+                        <div>👁️</div>
+                        <div><span>VISIBILIDAD</span><b>12 km</b></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Astronomía -->
+            <div class="card">
+                <div class="card-title">Astronomía</div>
+                <div>
+                    <div class="astro-chart">
+                        <div class="astro-sun">☀️</div>
+                    </div>
+                    <div class="astro-times">
+                        <div>Amanecer<br><b>06:32</b></div>
+                        <div style="text-align: right;">Atardecer<br><b>21:28</b></div>
+                    </div>
+                </div>
+                <div class="moon-box">
+                    <div style="font-size: 20px;">🌕</div>
+                    <div>
+                        <span>FASE LUNAR</span><br><b>Gibosa Creciente (89%)</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Ubicación / Geospatial -->
+            <div class="card">
+                <div class="card-title">Ubicación</div>
+                <div class="geo-box">
+                    <div class="geo-item">
+                        <span>🎯 Coordenadas</span>
+                        <b id="val-coords" style="font-size: 11px;">Buscando señal GPS...</b>
+                    </div>
+                    <div class="geo-item">
+                        <span>🏔️ Altitud</span>
+                        <b>580 msnm</b>
+                    </div>
+                    <div class="geo-item">
+                        <span>🗺️ Nivel del Suelo</span>
+                        <b>Estable (0m)</b>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 5. Reloj Mundial -->
+        <div class="card world-card">
+            <div class="card-title">Reloj Mundial</div>
+            <div class="world-layout">
+                <div class="world-icon">🌍</div>
+                <div class="world-list">
+                    <div class="world-line">🇬🇧 Londres <span id="utc-london">00:00</span></div>
+                    <div class="world-line">🇺🇸 Nueva York <span id="utc-ny">00:00</span></div>
+                    <div class="world-line">🇯🇵 Tokio <span id="utc-tokyo">00:00</span></div>
+                    <div class="world-line">📍 Local <span id="utc-local" style="color: var(--accent-green); font-weight: bold;">00:00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú de Navegación -->
+        <div class="nav-bar">
+            <a href="#" class="nav-link active"><span class="nav-icon-label">🏠</span>Inicio</a>
+            <a href="#" class="nav-link"><span class="nav-icon-label">☁️</span>Clima</a>
+            <a href="#" class="nav-link"><span class="nav-icon-label">📍</span>Ubicación</a>
+            <a href="#" class="nav-link"><span class="nav-icon-label">🔭</span>Astronomía</a>
+            <a href="#" class="nav-link"><span class="nav-icon-label">⚙️</span>Ajustes</a>
+        </div>
+
+    </div>
+
+    <script>
+        // Reloj Dinámico Local y Mundial
+        function startClock() {
+            function refresh() {
+                const now = new Date();
+                
+                // Formatear Hora Local
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('txt-time').innerText = `${hh}:${mm}`;
+                document.getElementById('utc-local').innerText = `${hh}:${mm}`;
+
+                // Formatear Fecha Completa
+                const formatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                document.getElementById('txt-date').innerText = now.toLocaleDateString('es-ES', formatOptions);
+
+                // Relojes Mundiales usando zonas horarias internacionales
+                const formatWorld = (tz) => now.toLocaleTimeString('es-ES', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+                document.getElementById('utc-london').innerText = formatWorld('Europe/London');
+                document.getElementById('utc-ny').innerText = formatWorld('America/New_York');
+                document.getElementById('utc-tokyo').innerText = formatWorld('Asia/Tokyo');
+            }
+            setInterval(refresh, 1000);
+            refresh();
+        }
+
+        // Geolocalización Automática y Sincronización de Clima Real
+        function initLocationServices() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
                     
-                    // Mostramos un estado básico basado en el código del clima
-                    const code = data.current.weathercode;
-                    let estado = "Despejado";
-                    let icono = "☀️";
-                    
-                    if (code > 0 && code <= 3) {
-                        estado = "Parcialmente nublado";
-                        icono = "⛅";
-                    } else if (code > 3) {
-                        estado = "Nublado o Lluvioso";
-                        icono = "🌧️";
+                    // Actualizar coordenadas en pantalla
+                    document.getElementById('val-coords').innerText = `${lat.toFixed(4)}° N, ${lon.toFixed(4)}° O`;
+
+                    try {
+                        // Reverse Geocoding para obtener el nombre real del municipio o entorno
+                        const geoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+                        const geoResp = await fetch(geoUrl);
+                        const geoData = await geoResp.json();
+                        
+                        const areaName = geoData.address.city || geoData.address.town || geoData.address.village || "Zona Detectada";
+                        document.getElementById('val-city').innerText = areaName;
+
+                        // Llamada a API Meteorológica Abierta y Gratuita basada en coordenadas exactas
+                        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+                        const weatherResp = await fetch(weatherUrl);
+                        const weatherData = await weatherResp.json();
+                        
+                        if (weatherData && weatherData.current_weather) {
+                            const temp = Math.round(weatherData.current_weather.temperature);
+                            document.getElementById('val-temp-header').innerText = temp;
+                            document.getElementById('val-temp-card').innerText = temp;
+                        }
+                    } catch (err) {
+                        console.error("Error cargando los datos externos en vivo:", err);
                     }
-                    
-                    document.getElementById("estado").textContent = estado;
-                    document.getElementById("icono").textContent = icono;
-                    
-                    // Obtenemos el nombre de la ciudad usando latitud y longitud
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-                        .then(response => response.json())
-                        .then(cityData => {
-                            const city = cityData.address.city || cityData.address.town || cityData.address.village || "Tu ubicación";
-                            document.getElementById("ubicacion").textContent = city;
-                        });
+                }, (err) => {
+                    document.getElementById('val-coords').innerText = "Permiso de GPS denegado";
+                    document.getElementById('val-city').innerText = "Ubicación Privada";
                 });
-        });
-    }
-}
+            } else {
+                document.getElementById('val-coords').innerText = "GPS no soportado";
+            }
+        }
 
-setInterval(actualizarHoraYFecha, 1000);
-actualizarHoraYFecha();
-obtenerUbicacionYClima();
-</script>
-
+        // Arrancar el sistema al cargar la web
+        window.onload = function() {
+            startClock();
+            initLocationServices();
+        };
+    </script>
 </body>
 </html>
